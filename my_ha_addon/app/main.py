@@ -11,47 +11,75 @@ from pathlib import Path
 # Configuration loading
 def load_config():
     """Load configuration from YAML file"""
-    # Try add-on data directory first (persisted, editable location)
-    config_path = Path("/data/neuralprophet.yaml")
+    # Data directory path (persisted on host)
+    data_dir = Path("/data")
+    config_path = data_dir / "neuralprophet.yaml"
     
-    print(f"Looking for config at: {config_path}")
+    # Bundled config location in container
+    bundled_config = Path(__file__).parent.parent / "neuralprophet.yaml"
+    
+    print(f"=== CONFIG LOADING DEBUG ===")
+    print(f"Data directory: {data_dir}")
+    print(f"Data directory exists: {data_dir.exists()}")
+    print(f"Config path: {config_path}")
     print(f"Config exists: {config_path.exists()}")
+    print(f"Bundled config: {bundled_config}")
+    print(f"Bundled exists: {bundled_config.exists()}")
     
-    # Fall back to bundled config for first run
+    # Always copy bundled config to /data/ if it doesn't exist
     if not config_path.exists():
-        bundled_config = Path(__file__).parent.parent / "neuralprophet.yaml"
-        print(f"Bundled config path: {bundled_config}")
-        print(f"Bundled config exists: {bundled_config.exists()}")
+        print(f"Config not found in /data/, attempting to copy...")
         
         if bundled_config.exists():
-            print(f"Copying config from {bundled_config} to {config_path}")
             try:
-                # Ensure data directory exists
-                config_path.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy(bundled_config, config_path)
-                print(f"Config file copied successfully to {config_path}")
-                print(f"Copied file exists: {config_path.exists()}")
+                # Ensure data directory exists (it should, but be safe)
+                data_dir.mkdir(parents=True, exist_ok=True)
+                
+                # Copy the file
+                print(f"Copying: {bundled_config} -> {config_path}")
+                shutil.copy2(bundled_config, config_path)
+                
+                # Verify copy
+                if config_path.exists():
+                    print(f"✓ Config copied successfully!")
+                    print(f"  File size: {config_path.stat().st_size} bytes")
+                else:
+                    print(f"✗ Copy failed - file doesn't exist after copy")
+                    
             except Exception as e:
-                print(f"Error copying config: {e}")
+                print(f"✗ Error copying config: {e}")
                 import traceback
                 traceback.print_exc()
-                # Fall back to bundled config
+                # Use bundled config as fallback
                 config_path = bundled_config
+                print(f"Using bundled config as fallback: {config_path}")
         else:
-            print(f"WARNING: Bundled config not found at {bundled_config}")
-            # List directory contents for debugging
-            parent_dir = bundled_config.parent
-            if parent_dir.exists():
-                print(f"Contents of {parent_dir}:")
-                for item in parent_dir.iterdir():
-                    print(f"  - {item}")
-    
-    if config_path.exists():
-        print(f"Loading config from {config_path}")
-        with open(config_path, 'r') as f:
-            return yaml.safe_load(f)
+            print(f"✗ Bundled config not found!")
+            # Try to list what's in the parent directory
+            parent = bundled_config.parent
+            if parent.exists():
+                print(f"Contents of {parent}:")
+                for item in sorted(parent.iterdir()):
+                    print(f"  {item}")
     else:
-        print(f"Config file not found, using defaults")
+        print(f"✓ Config already exists in /data/")
+    
+    # Load the config file
+    if config_path.exists():
+        print(f"Loading config from: {config_path}")
+        try:
+            with open(config_path, 'r') as f:
+                loaded_config = yaml.safe_load(f)
+                print(f"✓ Config loaded successfully")
+                print(f"=== END CONFIG DEBUG ===\n")
+                return loaded_config
+        except Exception as e:
+            print(f"✗ Error loading config: {e}")
+            print(f"=== END CONFIG DEBUG ===\n")
+            return {}
+    else:
+        print(f"✗ No config file found, using defaults")
+        print(f"=== END CONFIG DEBUG ===\n")
         return {}
 
 # Load configuration
