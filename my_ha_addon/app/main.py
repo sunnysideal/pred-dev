@@ -8,6 +8,13 @@ import shutil
 from time import sleep
 from pathlib import Path
 
+print("=" * 60)
+print("ADDON STARTING - main.py is executing")
+print(f"Python version: {sys.version}")
+print(f"Current working directory: {os.getcwd()}")
+print(f"Script location: {__file__}")
+print("=" * 60)
+
 # Configuration loading
 def load_config():
     """Load configuration from YAML file"""
@@ -82,25 +89,23 @@ def load_config():
         print(f"=== END CONFIG DEBUG ===\n")
         return {}
 
-# Load configuration
-config = load_config()
-
-# Set up logging
-log_level = config.get('logging', {}).get('level', 'info').upper()
-log_format = config.get('logging', {}).get('format', '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
+# Set up basic logging first
 logging.basicConfig(
-    level=getattr(logging, log_level),
-    format=log_format
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
 class HomeAssistantAPI:
     """Client for interacting with Home Assistant API"""
     
-    def __init__(self):
+    def __init__(self, config=None):
         # Get the supervisor token from environment
         self.token = os.environ.get('SUPERVISOR_TOKEN')
+        
+        # Use config if provided, otherwise defaults
+        if config is None:
+            config = {}
         
         # Home Assistant API endpoint (from config or default)
         self.ha_url = config.get('homeassistant', {}).get('url', "http://supervisor/core/api")
@@ -166,11 +171,15 @@ class HomeAssistantAPI:
 def main():
     """Main application entry point"""
     logger.info("Home Assistant Add-on starting...")
+    
+    # Load configuration
+    config = load_config()
+    
     logger.info(f"App name: {config.get('app_name', 'Unknown')}")
     logger.info(f"Version: {config.get('version', 'Unknown')}")
     
     # Initialize Home Assistant API client
-    ha_api = HomeAssistantAPI()
+    ha_api = HomeAssistantAPI(config)
     
     # Get poll interval from config
     poll_interval = config.get('settings', {}).get('poll_interval', 60)
