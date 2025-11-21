@@ -10,13 +10,25 @@ from pathlib import Path
 # Configuration loading
 def load_config():
     """Load configuration from YAML file"""
-    config_path = Path(__file__).parent.parent / "config.yaml"
+    # Try add-on data directory first (persisted, editable location)
+    config_path = Path("/data/neuralprophet.yaml")
+    
+    # Fall back to bundled config for first run
+    if not config_path.exists():
+        bundled_config = Path(__file__).parent.parent / "neuralprophet.yaml"
+        if bundled_config.exists():
+            logger.info(f"Creating default config at {config_path}")
+            # Copy bundled config to data directory
+            import shutil
+            config_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(bundled_config, config_path)
     
     if config_path.exists():
+        logger.info(f"Loading config from {config_path}")
         with open(config_path, 'r') as f:
             return yaml.safe_load(f)
     else:
-        logger.warning(f"Config file not found at {config_path}, using defaults")
+        logger.warning(f"Config file not found, using defaults")
         return {}
 
 # Load configuration
