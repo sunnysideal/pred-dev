@@ -1,6 +1,6 @@
 {
   "name": "NeuralProphet Add-on",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "slug": "neuralprophet_addon",
   "description": "A custom Home Assistant add-on",
   "arch": ["aarch64", "amd64", "armhf", "armv7", "i386"],
