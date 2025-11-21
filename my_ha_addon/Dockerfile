@@ -8,6 +8,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 COPY run.sh /
 RUN chmod a+x /run.sh
 
+COPY neuralprophet.yaml /
 COPY app /app
 WORKDIR /app
 
