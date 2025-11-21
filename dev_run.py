@@ -23,6 +23,11 @@ if __name__ == "__main__":
     # Load environment variables
     load_env()
     
+    # Add the add-on directory to the path
+    import sys
+    addon_path = os.path.join(os.path.dirname(__file__), 'my_ha_addon')
+    sys.path.insert(0, addon_path)
+    
     # Modify the API URL for local development
     import app.main as main
     
