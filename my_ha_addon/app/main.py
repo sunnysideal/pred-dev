@@ -4,6 +4,7 @@ import logging
 import requests
 import json
 import yaml
+import shutil
 from time import sleep
 from pathlib import Path
 
@@ -17,18 +18,23 @@ def load_config():
     if not config_path.exists():
         bundled_config = Path(__file__).parent.parent / "neuralprophet.yaml"
         if bundled_config.exists():
-            logger.info(f"Creating default config at {config_path}")
-            # Copy bundled config to data directory
-            import shutil
-            config_path.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy(bundled_config, config_path)
+            print(f"Creating default config at {config_path}")
+            try:
+                # Ensure data directory exists
+                config_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(bundled_config, config_path)
+                print(f"Config file copied successfully")
+            except Exception as e:
+                print(f"Error copying config: {e}")
+                # Fall back to bundled config
+                config_path = bundled_config
     
     if config_path.exists():
-        logger.info(f"Loading config from {config_path}")
+        print(f"Loading config from {config_path}")
         with open(config_path, 'r') as f:
             return yaml.safe_load(f)
     else:
-        logger.warning(f"Config file not found, using defaults")
+        print(f"Config file not found, using defaults")
         return {}
 
 # Load configuration
