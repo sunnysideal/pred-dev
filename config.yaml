@@ -1,0 +1,54 @@
+# Configuration file for Home Assistant Add-on
+
+# General settings
+app_name: "NeuralProphet Add-on"
+version: "0.0.1"
+
+# Logging configuration
+logging:
+  level: "info"  # Options: debug, info, warning, error, critical
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# Home Assistant connection settings
+# Note: These are automatically configured when running as an add-on
+# For local development, these will be overridden by .env file
+homeassistant:
+  url: "http://supervisor/core/api"
+  timeout: 10
+
+# Application settings
+settings:
+  # How often to poll for updates (in seconds)
+  poll_interval: 60
+  
+  # Maximum number of retries for API calls
+  max_retries: 3
+  
+  # Retry delay in seconds
+  retry_delay: 5
+
+# Entity monitoring configuration
+# List the entities you want to monitor
+entities:
+  # Example entities - modify based on your needs
+  - entity_id: "sensor.living_room_temperature"
+    friendly_name: "Living Room Temp"
+    
+  - entity_id: "light.bedroom"
+    friendly_name: "Bedroom Light"
+    
+  # Add more entities here
+  # - entity_id: "switch.kitchen"
+  #   friendly_name: "Kitchen Switch"
+
+# Custom settings for your add-on
+# Add your own configuration options below
+custom:
+  # Example: enable/disable features
+  enable_notifications: true
+  enable_automation: false
+  
+  # Example: thresholds or limits
+  temperature_threshold: 25.0
+  
+  # Add your own settings here
